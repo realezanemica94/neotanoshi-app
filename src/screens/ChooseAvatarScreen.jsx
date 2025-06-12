@@ -1,14 +1,8 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 
 export default function ChooseAvatarScreen({ route, navigation }) {
-  const { name, password } = route.params;
+  const { name } = route.params;
   const [image, setImage] = useState(null);
 
   const predefinedAvatars = [
@@ -26,57 +20,36 @@ export default function ChooseAvatarScreen({ route, navigation }) {
     require('../assets/images/avatares/avatar12.jpeg'),
   ];
 
-  const isSelected = (avatar) => image && image.source === avatar;
+  const isSelected = avatar => image && image.source === avatar;
 
   const handleContinue = () => {
-    navigation.navigate('CreateProfileConfirm', {
-      selectedAvatar: image?.source || null,
-      name,
-      password,
-    });
-  };
-
-  const handleSkip = () => {
-    navigation.navigate('CreateProfileConfirm', {
-      name,
-      password,
-      selectedAvatar: null,
-    });
+    if (!image) {
+      Alert.alert('Debes seleccionar un avatar.');
+      return;
+    }
+    navigation.navigate('CreateProfileConfirm', { name, selectedAvatar: image.source });
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Elegir avatar</Text>
-
       <View style={styles.grid}>
         {predefinedAvatars.map((avatar, index) => (
           <TouchableOpacity
             key={index}
             onPress={() => setImage({ source: avatar })}
-            style={[
-              styles.avatarOption,
-              isSelected(avatar) && styles.selectedAvatar,
-            ]}
+            style={[styles.avatarOption, isSelected(avatar) && styles.selectedAvatar]}
           >
             <Image source={avatar} style={styles.avatarImage} />
           </TouchableOpacity>
         ))}
       </View>
-
       <TouchableOpacity style={styles.button} onPress={handleContinue}>
         <Text style={styles.buttonText}>Continuar</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[styles.button, styles.skipButton]}
-        onPress={handleSkip}
-      >
-        <Text style={styles.buttonText}>Omitir</Text>
       </TouchableOpacity>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

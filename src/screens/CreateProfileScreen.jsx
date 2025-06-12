@@ -1,53 +1,27 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 
 export default function CreateProfileScreen({ navigation }) {
   const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
 
-  // Ir a pantalla de selección de avatar
   const goToAvatarScreen = () => {
     if (!name.trim()) {
-      alert('Por favor ingresa un nombre de perfil.');
+      Alert.alert('Por favor ingresa un nombre de perfil.');
       return;
     }
-
-    navigation.navigate('ChooseAvatarScreen', {
-      name,
-      password,
-    });
-  };
-
-  // Ir directamente a confirmar perfil sin avatar
-  const skipAvatar = () => {
-    if (!name.trim()) {
-      alert('Por favor ingresa un nombre de perfil.');
-      return;
-    }
-
-    navigation.navigate('CreateProfileConfirm', {
-      name,
-      password,
-      selectedAvatar: null, // clave correcta esperada por la pantalla 3
-    });
+    navigation.navigate('ChooseAvatarScreen', { name });
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Crear perfil</Text>
 
-      {/* Botón "+" para seleccionar avatar */}
+      {/* Botón para seleccionar avatar */}
       <TouchableOpacity style={styles.avatarUpload} onPress={goToAvatarScreen}>
         <Text style={styles.plus}>+</Text>
       </TouchableOpacity>
 
-      {/* Campos de entrada */}
+      {/* Nombre obligatorio */}
       <TextInput
         placeholder="Nombre de Perfil"
         placeholderTextColor="#ccc"
@@ -55,23 +29,14 @@ export default function CreateProfileScreen({ navigation }) {
         value={name}
         onChangeText={setName}
       />
-      <TextInput
-        placeholder="Contraseña (Opcional)"
-        placeholderTextColor="#ccc"
-        secureTextEntry
-        style={styles.input}
-        value={password}
-        onChangeText={setPassword}
-      />
 
-      {/* Botón para saltar selección de avatar */}
-      <TouchableOpacity style={styles.button} onPress={skipAvatar}>
+      {/* Continuar al selector de avatar */}
+      <TouchableOpacity style={styles.button} onPress={goToAvatarScreen}>
         <Text style={styles.buttonText}>Crear Perfil</Text>
       </TouchableOpacity>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

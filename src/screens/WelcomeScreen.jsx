@@ -1,23 +1,26 @@
 import React from 'react';
-import { View,
+import {
+  View,
   Text,
   TouchableOpacity,
   ImageBackground,
   StyleSheet,
-  Image } from 'react-native';
+  Image
+} from 'react-native';
 
 export default function WelcomeScreen({ navigation }) {
   return (
     <ImageBackground
-      source={require('../assets/images/WelcomeScreen.jpeg')} 
-      /* Asegúrate de tener en /src/assets la imagen del fondo */
+      source={require('../assets/images/WelcomeScreen.jpeg')}
       style={styles.background}
+      resizeMode="cover"
     >
       <View style={styles.overlay}>
-      <Image
-        source={require('../assets/images/neotanoshilogo.png')} 
-        style={styles.logo}
-      />
+        <Image
+          source={require('../assets/images/neotanoshilogo.png')}
+          style={styles.logo}
+        />
+
         <Text style={styles.subtitle}>¡Tu mundo de mangas en un solo lugar!</Text>
 
         <TouchableOpacity
@@ -33,6 +36,10 @@ export default function WelcomeScreen({ navigation }) {
         >
           <Text style={[styles.buttonText, styles.outlineText]}>Registrarse</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+          <Text style={styles.linkText}>¿Olvidaste tu contraseña?</Text>
+        </TouchableOpacity>
       </View>
     </ImageBackground>
   );
@@ -41,59 +48,51 @@ export default function WelcomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    width: '100%',
-    height: '100%',
-  },
-  logo: {
-    width: 120,
-    height: 40,
-    resizeMode: 'contain', // para que no se deforme
+    justifyContent: 'center',
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)', // semitransparente
-    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.65)',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
   },
-  title: {
-    fontSize: 36,
-    color: '#FF2E63', // color neón/rosa del mockup
-    fontWeight: 'bold',
-    marginBottom: 8,
+  logo: {
+    width: 140,
+    height: 140,
+    marginBottom: 20,
+    resizeMode: 'contain',
   },
   subtitle: {
-    fontSize: 16,
     color: '#fff',
-    marginBottom: 40,
+    fontSize: 16,
+    marginBottom: 30,
     textAlign: 'center',
   },
   button: {
-    width: '80%',
-    paddingVertical: 14,
-    borderRadius: 8,
-    backgroundColor: '#2b77e4', // color neón azulado
-    borderWidth: 2,
-    borderColor: '#00E0FF',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
+    backgroundColor: '#3b82f6',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 6,
+    marginVertical: 10,
+    width: '100%',
   },
   buttonOutline: {
-    width: '80%',
-    paddingVertical: 14,
-    borderRadius: 8,
-    backgroundColor: '#2b77e4', // color neón azulado
+    backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: '#00E0FF',
-    alignItems: 'center',
-    marginBottom: 16,
+    borderColor: '#3b82f6',
+  },
+  buttonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
   outlineText: {
-    color: '#ffffff',
+    color: '#3b82f6',
+  },
+  linkText: {
+    color: '#fff',
+    textDecorationLine: 'underline',
+    marginTop: 10,
   },
 });

@@ -12,10 +12,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function CreateProfileConfirm({ route, navigation }) {
-  const { selectedAvatar, name: initialName, password: initialPassword } = route.params;
-
+  const { name: initialName, selectedAvatar } = route.params;
   const [name, setName] = useState(initialName || '');
-  const [password, setPassword] = useState(initialPassword || '');
 
   const handleCreate = async () => {
     if (!name.trim()) {
@@ -23,41 +21,41 @@ export default function CreateProfileConfirm({ route, navigation }) {
       return;
     }
 
-    try {
-      const user = JSON.parse(await AsyncStorage.getItem('user'));
+    if (!selectedAvatar) {
+      Alert.alert('El avatar es obligatorio.');
+      return;
+    }
 
-      if (!user || !user._id) {
-        Alert.alert('Usuario no encontrado.');
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const userData = await AsyncStorage.getItem('user');
+
+      if (!token || !userData) {
+        Alert.alert('No hay sesión activa. Por favor vuelve a iniciar sesión.');
         return;
       }
 
+      const user = JSON.parse(userData);
+
       const formData = new FormData();
-      formData.append('user', user._id); // ✅ CORREGIDO
+      formData.append('userId', user._id);
       formData.append('name', name);
-      if (password) formData.append('password', password);
-
-      if (selectedAvatar?.uri) {
-        formData.append('avatar', {
-          uri: selectedAvatar.uri,
-          name: 'avatar.jpg',
-          type: 'image/jpeg',
-        });
-      }
-
-      const response = await axios.post('http://localhost:3000/api/profiles', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      formData.append('avatar', {
+        uri: selectedAvatar.uri || selectedAvatar,
+        name: 'avatar.jpg',
+        type: 'image/jpeg',
       });
 
-      const profile = response.data;
-
-      await AsyncStorage.setItem('selectedProfile', JSON.stringify(profile)); // ✅ GUARDADO
-
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'AppTabs' }], // ✅ REDIRECCIÓN
+      await axios.post('http://localhost:3000/api/profiles', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`,
+        },
       });
+
+      navigation.replace('ProfileSelectionScreen');
     } catch (error) {
-      console.error('❌ Error al crear perfil:', error.response?.data || error.message);
+      console.error('Error al crear perfil:', error);
       Alert.alert('Error al crear el perfil. Intenta de nuevo.');
     }
   };
@@ -67,7 +65,10 @@ export default function CreateProfileConfirm({ route, navigation }) {
       <Text style={styles.title}>Crear perfil</Text>
 
       {selectedAvatar && (
-        <Image source={selectedAvatar} style={styles.avatar} />
+        <Image
+          source={selectedAvatar.uri ? { uri: selectedAvatar.uri } : selectedAvatar}
+          style={styles.avatar}
+        />
       )}
 
       <TextInput
@@ -78,21 +79,13 @@ export default function CreateProfileConfirm({ route, navigation }) {
         onChangeText={setName}
       />
 
-      <TextInput
-        placeholder="Contraseña (Opcional)"
-        placeholderTextColor="#ccc"
-        secureTextEntry
-        style={styles.input}
-        value={password}
-        onChangeText={setPassword}
-      />
-
       <TouchableOpacity style={styles.button} onPress={handleCreate}>
         <Text style={styles.buttonText}>Crear Perfil</Text>
       </TouchableOpacity>
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

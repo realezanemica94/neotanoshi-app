@@ -1,77 +1,69 @@
-import React, { useEffect, useState, useContext } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  Image,
-  StyleSheet,
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { AuthContext } from '../state/AuthContext';
 
 export default function ProfileSelectionScreen({ navigation }) {
-  const { user } = useContext(AuthContext);
+  const [user, setUser] = useState(null);
   const [profiles, setProfiles] = useState([]);
 
   useEffect(() => {
-    let isMounted = true;
-
-    const loadProfiles = async () => {
-      if (!user) return;
-
+    const loadUserAndProfiles = async () => {
       try {
-        const res = await axios.get(`http://localhost:3000/api/profiles/${user._id}`);
-        if (isMounted) setProfiles(res.data);
+        const storedUser = await AsyncStorage.getItem('user');
+        const token = await AsyncStorage.getItem('token');
+
+        if (!storedUser || !token) {
+          console.warn('Usuario o token no encontrados');
+          return;
+        }
+
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+
+        const res = await axios.get(`http://localhost:3000/api/profiles/${parsedUser._id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setProfiles(res.data.filter(p => p.avatar));
       } catch (err) {
-        console.error('Error fetching profiles', err);
+        console.error('Error cargando perfiles:', err);
       }
     };
 
-    loadProfiles();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [user]);
+    loadUserAndProfiles();
+  }, []);
 
   const selectProfile = async (item) => {
     await AsyncStorage.setItem('selectedProfile', JSON.stringify(item));
-    navigation.replace('AppTabs'); // Redirigir directamente a la app principal
+    navigation.replace('AppTabs');
   };
 
-  const renderItem = ({ item, index }) => (
+  const getAvatarSource = (avatarUrl) => {
+    if (avatarUrl.startsWith('http')) return { uri: avatarUrl };
+    return require('../assets/images/icon_plus.png');
+  };
+
+  const renderItem = ({ item }) => (
     <TouchableOpacity style={styles.profileItem} onPress={() => selectProfile(item)}>
-      <Image
-        source={{ uri: item.avatarUrl || 'https://example.com/default-avatar.png' }}
-        style={styles.avatar}
-      />
-      <Text style={styles.profileName}>Perfil {index + 1}</Text>
+      <Image source={getAvatarSource(item.avatar)} style={styles.avatar} />
+      <Text style={styles.profileName}>{item.name}</Text>
     </TouchableOpacity>
   );
 
   const renderAddProfile = () => (
-    <TouchableOpacity style={styles.profileItem} onPress={() => navigation.navigate('CreateProfile')}>
-      <View style={styles.addProfileCircle}>
-        <Text style={styles.plusSign}>+</Text>
-      </View>
+    <TouchableOpacity style={styles.profileItem} onPress={() => navigation.navigate('CreateProfileScreen')}>
+      <View style={styles.addProfileCircle}><Text style={styles.plusSign}>+</Text></View>
       <Text style={styles.profileName}>Añadir perfil</Text>
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>¿Cuál es tu comic perfil?</Text>
-      <FlatList
-        data={profiles.slice(0, 3)}
-        keyExtractor={(item) => item._id}
-        renderItem={renderItem}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        ListFooterComponent={renderAddProfile}
-        contentContainerStyle={styles.listContent}
-      />
+      <Text style={styles.title}>Seleccionar perfil</Text>
+      <FlatList data={profiles} keyExtractor={item => item._id} renderItem={renderItem} numColumns={2} columnWrapperStyle={styles.row} ListFooterComponent={renderAddProfile} contentContainerStyle={styles.listContent} />
     </View>
   );
 }

@@ -8,33 +8,50 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   const register = async (email, password) => {
-    const res = await axios.post('http://localhost:5000/api/auth/register', { email, password });
-    await AsyncStorage.setItem('user', JSON.stringify(res.data));
-    await AsyncStorage.removeItem('selectedProfile'); // limpiar perfil previo
-    setUser(res.data);
+    try {
+      const res = await axios.post('http://localhost:3000/api/auth/register', { email, password });
+
+      const { token, user } = res.data;
+
+      await AsyncStorage.setItem('token', token);
+      await AsyncStorage.setItem('user', JSON.stringify(user));
+      setUser(user);
+    } catch (err) {
+      console.error('Error en registro:', err.response?.data || err.message);
+      alert('Error al registrar usuario');
+    }
   };
 
-const login = async (email, password) => {
-  try {
-    const res = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-    await AsyncStorage.setItem('user', JSON.stringify(res.data));
-    await AsyncStorage.removeItem('selectedProfile');
-    setUser(res.data);
-  } catch (err) {
-    alert('Credenciales inválidas');
-    console.error('Login error:', err.response?.data || err.message);
-  }
-};
+  const login = async (email, password) => {
+    try {
+      const res = await axios.post('http://localhost:3000/api/auth/login', { email, password });
+
+      const { token, user } = res.data;
+      await AsyncStorage.setItem('token', token);
+      await AsyncStorage.setItem('user', JSON.stringify(user));
+
+      setUser(user);
+    } catch (err) {
+      console.error('Login error:', err.response?.data || err.message);
+      alert('Credenciales inválidas');
+    }
+  };
 
   const resetPassword = async (email, newPassword) => {
-    await axios.post('http://localhost:5000/api/auth/reset-password', {
-      email,
-      newPassword,
-    });
+    try {
+      await axios.post('http://localhost:3000/api/auth/reset-password', {
+        email,
+        newPassword,
+      });
+      alert('Contraseña restablecida correctamente.');
+    } catch (err) {
+      console.error('Error al restablecer contraseña:', err.response?.data || err.message);
+      alert('Error al restablecer contraseña');
+    }
   };
 
   const logout = async () => {
-    await AsyncStorage.clear(); // borra user y perfil
+    await AsyncStorage.clear();
     setUser(null);
   };
 
