@@ -84,26 +84,6 @@ export default function HomeScreen() {
           )}
         />
       </ScrollView>
-
-      {/* Barra inferior de navegación */}
-      <View style={styles.bottomNavigation}>
-        <TouchableOpacity style={styles.navButton}>
-          <Image source={require('../assets/images/menu/home_1.png')} style={styles.navIcon} />
-          <Text style={styles.navText}>Inicio</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Image source={require('../assets/images/menu/favorite.png')} style={styles.navIcon} />
-          <Text style={styles.navText}>Favoritos</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Image source={require('../assets/images/menu/explore.png')} style={styles.navIcon} />
-          <Text style={styles.navText}>Explorar</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Image source={require('../assets/images/menu/profile.png')} style={styles.navIcon} />
-          <Text style={styles.navText}>Cuenta</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }

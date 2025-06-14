@@ -4,9 +4,17 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'reac
 export default function CreateProfileScreen({ navigation }) {
   const [name, setName] = useState('');
 
-  const goToAvatarScreen = () => {
+  const handleAvatarSelection = () => {
     if (!name.trim()) {
-      Alert.alert('Por favor ingresa un nombre de perfil.');
+      Alert.alert('Por favor ingresa un nombre antes de elegir un avatar.');
+      return;
+    }
+    navigation.navigate('ChooseAvatarScreen', { name });
+  };
+
+  const handleContinue = () => {
+    if (!name.trim()) {
+      Alert.alert('El nombre de perfil es obligatorio.');
       return;
     }
     navigation.navigate('ChooseAvatarScreen', { name });
@@ -16,12 +24,12 @@ export default function CreateProfileScreen({ navigation }) {
     <View style={styles.container}>
       <Text style={styles.title}>Crear perfil</Text>
 
-      {/* Botón para seleccionar avatar */}
-      <TouchableOpacity style={styles.avatarUpload} onPress={goToAvatarScreen}>
+      {/* Botón circular para seleccionar avatar */}
+      <TouchableOpacity style={styles.avatarUpload} onPress={handleAvatarSelection}>
         <Text style={styles.plus}>+</Text>
       </TouchableOpacity>
 
-      {/* Nombre obligatorio */}
+      {/* Input para nombre de perfil */}
       <TextInput
         placeholder="Nombre de Perfil"
         placeholderTextColor="#ccc"
@@ -30,13 +38,14 @@ export default function CreateProfileScreen({ navigation }) {
         onChangeText={setName}
       />
 
-      {/* Continuar al selector de avatar */}
-      <TouchableOpacity style={styles.button} onPress={goToAvatarScreen}>
-        <Text style={styles.buttonText}>Crear Perfil</Text>
+      {/* Botón para continuar */}
+      <TouchableOpacity style={styles.button} onPress={handleContinue}>
+        <Text style={styles.buttonText}>Continuar</Text>
       </TouchableOpacity>
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

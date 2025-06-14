@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AuthContext } from '../state/AuthContext'; // Asegúrate de que el path sea correcto
 
 export default function ProfileSelectionScreen({ navigation }) {
   const [user, setUser] = useState(null);
   const [profiles, setProfiles] = useState([]);
+
+  const { updateActiveProfile } = useContext(AuthContext);
 
   useEffect(() => {
     const loadUserAndProfiles = async () => {
@@ -21,13 +24,13 @@ export default function ProfileSelectionScreen({ navigation }) {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
 
-        const res = await axios.get(`http://localhost:3000/api/profiles/${parsedUser._id}`, {
+        const res = await axios.get(`http://localhost:3000/api/profiles/user/${parsedUser._id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        setProfiles(res.data.filter(p => p.avatar));
+        setProfiles(res.data.filter(p => p.avatarUrl));
       } catch (err) {
         console.error('Error cargando perfiles:', err);
       }
@@ -37,25 +40,34 @@ export default function ProfileSelectionScreen({ navigation }) {
   }, []);
 
   const selectProfile = async (item) => {
-    await AsyncStorage.setItem('selectedProfile', JSON.stringify(item));
-    navigation.replace('AppTabs');
+    try {
+      await updateActiveProfile(item); // ✅ usa contexto en lugar de solo AsyncStorage
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'AppTabs' }], // Asegúrate de que 'AppTabs' esté bien registrado
+      });
+    } catch (err) {
+      console.error('Error al seleccionar perfil:', err);
+    }
   };
 
   const getAvatarSource = (avatarUrl) => {
-    if (avatarUrl.startsWith('http')) return { uri: avatarUrl };
-    return require('../assets/images/icon_plus.png');
-  };
+  if (avatarUrl && avatarUrl.startsWith('http')) return { uri: avatarUrl };
+  return require('../assets/images/icon_plus.png');
+};
 
   const renderItem = ({ item }) => (
     <TouchableOpacity style={styles.profileItem} onPress={() => selectProfile(item)}>
-      <Image source={getAvatarSource(item.avatar)} style={styles.avatar} />
+      <Image source={getAvatarSource(item.avatarUrl)} style={styles.avatar} />
       <Text style={styles.profileName}>{item.name}</Text>
     </TouchableOpacity>
   );
 
   const renderAddProfile = () => (
     <TouchableOpacity style={styles.profileItem} onPress={() => navigation.navigate('CreateProfileScreen')}>
-      <View style={styles.addProfileCircle}><Text style={styles.plusSign}>+</Text></View>
+      <View style={styles.addProfileCircle}>
+        <Text style={styles.plusSign}>+</Text>
+      </View>
       <Text style={styles.profileName}>Añadir perfil</Text>
     </TouchableOpacity>
   );
@@ -63,11 +75,18 @@ export default function ProfileSelectionScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Seleccionar perfil</Text>
-      <FlatList data={profiles} keyExtractor={item => item._id} renderItem={renderItem} numColumns={2} columnWrapperStyle={styles.row} ListFooterComponent={renderAddProfile} contentContainerStyle={styles.listContent} />
+      <FlatList
+        data={profiles}
+        keyExtractor={item => item._id}
+        renderItem={renderItem}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        ListFooterComponent={renderAddProfile}
+        contentContainerStyle={styles.listContent}
+      />
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

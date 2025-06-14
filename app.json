@@ -19,7 +19,7 @@
       "edgeToEdgeEnabled": true
     },
     "web": {
-      "bundler": "metro", 
+      "bundler": "metro",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
@@ -31,7 +31,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true

@@ -47,8 +47,10 @@ export default function WelcomeScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   background: {
-    flex: 1,
-    justifyContent: 'center',
+    flex: 1,                  
+    width: '100%',            
+    height: '100%',           
+    justifyContent: 'center',   
   },
   overlay: {
     flex: 1,

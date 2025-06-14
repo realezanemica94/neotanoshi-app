@@ -16,15 +16,9 @@ const imageSize = width / numColumns - 20;
 const TABS = ['Todo el manga', 'Géneros', 'Puede gustarte'];
 
 const data = [
-  { id: '1', image: require('../assets/images/manga1.jpg') },
-  { id: '2', image: require('../assets/images/manga2.jpg') },
-  { id: '3', image: require('../assets/images/manga3.jpg') },
-  { id: '4', image: require('../assets/images/manga4.jpg') },
-  { id: '5', image: require('../assets/images/manga5.jpg') },
-  { id: '6', image: require('../assets/images/manga6.jpg') },
-  { id: '7', image: require('../assets/images/manga7.jpg') },
-  { id: '8', image: require('../assets/images/manga8.jpg') },
-  { id: '9', image: require('../assets/images/manga9.jpg') },
+  { id: '1', image: require('../assets/images/one_piece.jpg') },
+  { id: '2', image: require('../assets/images/spy_x_family.jpg') },
+  { id: '3', image: require('../assets/images/gantz.jpg') },
 ];
 
 export default function ExploreScreen() {

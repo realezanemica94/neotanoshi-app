@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthProvider, AuthContext } from './src/state/AuthContext';
@@ -14,11 +14,27 @@ import ChooseAvatarScreen from './src/screens/ChooseAvatarScreen';
 import CreateProfileConfirm from './src/screens/CreateProfileConfirm';
 import ProfileSelectionScreen from './src/screens/ProfileSelectionScreen';
 import HomeScreen from './src/screens/HomeScreen';
+import AppTabs from './src/navigation/AppTabs';
+
+import FavoriteScreen from './src/screens/FavoriteScreen'; 
+import CreateLists from './src/screens/CreateLists';
+
+
+
+import { ActivityIndicator, View } from 'react-native'; // para loading
 
 const Stack = createNativeStackNavigator();
 
 function AppNavigator() {
-  const { user } = useContext(AuthContext);
+  const { user, activeProfile, isLoading } = useContext(AuthContext);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#000' }}>
+        <ActivityIndicator size="large" color="#3b82f6" />
+      </View>
+    );
+  }
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -29,6 +45,15 @@ function AppNavigator() {
           <Stack.Screen name="Register" component={RegisterScreen} />
           <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         </>
+      ) : activeProfile ? (
+        <>
+          <Stack.Screen name="AppTabs" component={AppTabs} />
+          <Stack.Screen name="CreateLists" component={CreateLists} />
+          <Stack.Screen name="ProfileSelectionScreen" component={ProfileSelectionScreen} />
+          <Stack.Screen name="CreateProfileScreen" component={CreateProfileScreen} />
+          <Stack.Screen name="ChooseAvatarScreen" component={ChooseAvatarScreen} />
+          <Stack.Screen name="CreateProfileConfirm" component={CreateProfileConfirm} />
+        </>
       ) : (
         <>
           <Stack.Screen name="ProfileSelectionScreen" component={ProfileSelectionScreen} />
@@ -36,6 +61,8 @@ function AppNavigator() {
           <Stack.Screen name="ChooseAvatarScreen" component={ChooseAvatarScreen} />
           <Stack.Screen name="CreateProfileConfirm" component={CreateProfileConfirm} />
           <Stack.Screen name="HomeScreen" component={HomeScreen} />
+          <Stack.Screen name="FavoriteScreen" component={FavoriteScreen} />
+          <Stack.Screen name="CreateLists" component={CreateLists} />
         </>
       )}
     </Stack.Navigator>
@@ -51,4 +78,3 @@ export default function App() {
     </AuthProvider>
   );
 }
-

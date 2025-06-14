@@ -3,7 +3,7 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from 'react-na
 
 export default function ChooseAvatarScreen({ route, navigation }) {
   const { name } = route.params;
-  const [image, setImage] = useState(null);
+  const [selectedAvatar, setSelectedAvatar] = useState(null);
 
   const predefinedAvatars = [
     require('../assets/images/avatares/avatar1.jpeg'),
@@ -20,36 +20,41 @@ export default function ChooseAvatarScreen({ route, navigation }) {
     require('../assets/images/avatares/avatar12.jpeg'),
   ];
 
-  const isSelected = avatar => image && image.source === avatar;
-
   const handleContinue = () => {
-    if (!image) {
+    if (!selectedAvatar) {
       Alert.alert('Debes seleccionar un avatar.');
       return;
     }
-    navigation.navigate('CreateProfileConfirm', { name, selectedAvatar: image.source });
+
+    navigation.navigate('CreateProfileConfirm', { name, selectedAvatar });
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Elegir avatar</Text>
+
       <View style={styles.grid}>
         {predefinedAvatars.map((avatar, index) => (
           <TouchableOpacity
             key={index}
-            onPress={() => setImage({ source: avatar })}
-            style={[styles.avatarOption, isSelected(avatar) && styles.selectedAvatar]}
+            onPress={() => setSelectedAvatar(avatar)}
+            style={[
+              styles.avatarOption,
+              selectedAvatar === avatar && styles.selectedAvatar
+            ]}
           >
             <Image source={avatar} style={styles.avatarImage} />
           </TouchableOpacity>
         ))}
       </View>
+
       <TouchableOpacity style={styles.button} onPress={handleContinue}>
         <Text style={styles.buttonText}>Continuar</Text>
       </TouchableOpacity>
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -5,9 +5,11 @@ import {
   Text,
   TouchableOpacity,
   ImageBackground,
-  StyleSheet
+  StyleSheet,
+  Alert,
 } from 'react-native';
 import { AuthContext } from '../state/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function RegisterScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -15,9 +17,19 @@ export default function RegisterScreen({ navigation }) {
   const { register } = useContext(AuthContext);
 
   const handleRegister = async () => {
-    await register(email, password);
-    navigation.replace('CreateProfileScreen');
+    try {
+      await register(email, password);
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Startup' }],
+      });
+    } catch (err) {
+      console.error('Error en handleRegister:', err);
+      Alert.alert('Error', 'Registro fallido.');
+    }
   };
+
 
   return (
     <ImageBackground
@@ -48,7 +60,9 @@ export default function RegisterScreen({ navigation }) {
         />
 
         <Text style={styles.termsText}>
-          Al crear la cuenta accedes a nuestros <Text style={styles.link}>términos</Text> y <Text style={styles.link}>condiciones</Text>
+          Al crear la cuenta accedes a nuestros{' '}
+          <Text style={styles.link}>términos</Text> y{' '}
+          <Text style={styles.link}>condiciones</Text>
         </Text>
 
         <TouchableOpacity style={styles.button} onPress={handleRegister}>
@@ -124,4 +138,3 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 });
-

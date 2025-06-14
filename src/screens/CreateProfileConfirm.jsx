@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import {
   View,
   TextInput,
@@ -10,10 +10,16 @@ import {
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Asset } from 'expo-asset';
+import { AuthContext } from '../state/AuthContext';
+
+const API_URL = 'http://localhost:3000/api/profiles';
 
 export default function CreateProfileConfirm({ route, navigation }) {
   const { name: initialName, selectedAvatar } = route.params;
   const [name, setName] = useState(initialName || '');
+
+  const { updateActiveProfile } = useContext(AuthContext);
 
   const handleCreate = async () => {
     if (!name.trim()) {
@@ -21,42 +27,76 @@ export default function CreateProfileConfirm({ route, navigation }) {
       return;
     }
 
-    if (!selectedAvatar) {
-      Alert.alert('El avatar es obligatorio.');
+    if (!selectedAvatar || typeof selectedAvatar !== 'number') {
+      Alert.alert('Avatar inválido.');
       return;
     }
 
     try {
       const token = await AsyncStorage.getItem('token');
-      const userData = await AsyncStorage.getItem('user');
-
-      if (!token || !userData) {
-        Alert.alert('No hay sesión activa. Por favor vuelve a iniciar sesión.');
+      if (!token) {
+        Alert.alert('Sesión expirada. Redirigiendo al inicio...');
+        await AsyncStorage.clear();
+        navigation.reset({ index: 0, routes: [{ name: 'Startup' }] });
         return;
       }
 
-      const user = JSON.parse(userData);
+      const asset = Asset.fromModule(selectedAvatar);
+      await asset.downloadAsync();
+
+      const imageUri = asset.localUri || asset.uri;
+
+      if (!imageUri) {
+        Alert.alert('No se pudo cargar el avatar correctamente.');
+        return;
+      }
 
       const formData = new FormData();
-      formData.append('userId', user._id);
       formData.append('name', name);
       formData.append('avatar', {
-        uri: selectedAvatar.uri || selectedAvatar,
+        uri: imageUri,
         name: 'avatar.jpg',
         type: 'image/jpeg',
       });
 
-      await axios.post('http://localhost:3000/api/profiles', formData, {
+      const response = await axios.post(API_URL, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`,
         },
       });
 
-      navigation.replace('ProfileSelectionScreen');
+      // ✅ Verifica que el backend devuelva correctamente el perfil
+      if (!response.data || !response.data.profile) {
+        console.error('Respuesta inesperada:', response.data);
+        Alert.alert('Error', 'No se recibió un perfil válido desde el servidor.');
+        return;
+      }
+
+      const profile = response.data.profile;
+      console.log('Perfil creado correctamente:', profile);
+
+      // ✅ Guarda perfil y redirige al flujo de verificación
+      await updateActiveProfile(profile);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Startup' }],
+      });
+
     } catch (error) {
-      console.error('Error al crear perfil:', error);
-      Alert.alert('Error al crear el perfil. Intenta de nuevo.');
+      console.error('Error al crear perfil:', error.response?.data || error.message);
+
+      // Manejo específico si ya existe un perfil
+      if (error.response?.status === 409) {
+        Alert.alert('Perfil existente', 'Ya tienes un perfil creado. Selecciónalo o elimínalo para crear uno nuevo.');
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Startup' }],
+        });
+        return;
+      }
+
+      Alert.alert('Error al crear el perfil', 'Revisa la consola para más detalles.');
     }
   };
 
@@ -65,10 +105,7 @@ export default function CreateProfileConfirm({ route, navigation }) {
       <Text style={styles.title}>Crear perfil</Text>
 
       {selectedAvatar && (
-        <Image
-          source={selectedAvatar.uri ? { uri: selectedAvatar.uri } : selectedAvatar}
-          style={styles.avatar}
-        />
+        <Image source={selectedAvatar} style={styles.avatar} />
       )}
 
       <TextInput
